@@ -1,0 +1,15 @@
+{%extends 'main/base_main.html'%} {%block content%}
+<div class="grid-container">
+  <div class="grid-item">
+    Create New
+    <button><a href="{% url 'main:canvas' %}">Sign</a></button>
+  </div>
+  <div class="grid-item">
+    View Saved<button><a href="{% url 'main:view_saved' %}">View</a></button>
+  </div>
+  <div class="grid-item">
+    Profile<button><a href="{% url 'profiles:profile' %}">View</a></button>
+  </div>
+  <div class="grid-item">Coming Soon</div>
+</div>
+{%endblock%}

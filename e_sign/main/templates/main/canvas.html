@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Drawing Tool with Save</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .canvas-container {
+        position: relative;
+        display: inline-block;
+      }
+      canvas {
+        border: 1px solid #000;
+        cursor: crosshair;
+      }
+      .controls {
+        margin-top: 10px;
+      }
+      .control-item {
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <form method="post">{% csrf_token %}</form>
+    <div class="canvas-container">
+      <canvas id="myCanvas" width="800" height="500"></canvas>
+    </div>
+
+    <div class="controls">
+      <div class="control-item">
+        <label for="penColor">Pen Color:</label>
+        <input type="color" id="penColor" value="#000000" />
+      </div>
+      <div class="control-item">
+        <label for="penWidth">Pen Width:</label>
+        <input type="range" id="penWidth" min="1" max="10" value="2" />
+      </div>
+      <div class="control-item">
+        <label for="bgColor">Background Color:</label>
+        <input type="color" id="bgColor" value="#ffffff" />
+      </div>
+      <div class="control-item">
+        <button id="clearCanvas">Clear Canvas</button>
+      </div>
+      <div class="control-item">
+        <button id="downloadImage">Download Image</button>
+      </div>
+      <div class="control-item">
+        <button id="saveImage">Save Image</button>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+
+      let painting = false;
+      let penColor = document.getElementById("penColor").value;
+      let penWidth = document.getElementById("penWidth").value;
+      let bgColor = document.getElementById("bgColor").value;
+
+      // Function to fill the canvas with background color
+      function fillBackground() {
+        // Only fill if the background color is not white (default transparent).
+        if (bgColor && bgColor !== "#ffffff") {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      // Function to re-draw the canvas (background + current drawing)
+      function redrawCanvas() {
+        // Redraw background if the color is set
+        fillBackground();
+
+        // Redraw existing drawing
+        // We should capture the current state of the canvas and re-draw it after background is set.
+        ctx.drawImage(canvas, 0, 0);
+      }
+
+      // Update canvas background color in the UI
+      canvas.style.backgroundColor = bgColor;
+
+      function startPosition(e) {
+        painting = true;
+        draw(e);
+      }
+
+      function endPosition() {
+        painting = false;
+        ctx.beginPath();
+      }
+
+      function draw(e) {
+        if (!painting) return;
+
+        e.preventDefault();
+
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+
+        ctx.lineWidth = penWidth;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = penColor;
+
+        ctx.lineTo(clientX - canvas.offsetLeft, clientY - canvas.offsetTop);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(clientX - canvas.offsetLeft, clientY - canvas.offsetTop);
+      }
+
+      document.getElementById("penColor").addEventListener("input", (e) => {
+        penColor = e.target.value;
+      });
+
+      document.getElementById("penWidth").addEventListener("input", (e) => {
+        penWidth = e.target.value;
+      });
+
+      document.getElementById("bgColor").addEventListener("input", (e) => {
+        bgColor = e.target.value;
+        canvas.style.backgroundColor = bgColor; // Update the background color immediately in the UI
+      });
+
+      document.getElementById("clearCanvas").addEventListener("click", () => {
+        // Clear the canvas and redraw the background color
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fillBackground(); // Ensure background color is filled
+      });
+
+      document.getElementById("downloadImage").addEventListener("click", () => {
+        // Before downloading, ensure the background color is included
+        fillBackground(); // Fill the canvas with the background color
+        const imageUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.download = "canvas_image.png";
+        a.click();
+      });
+
+      document.getElementById("saveImage").addEventListener("click", () => {
+        // Ensure the background color is included before saving
+        fillBackground(); // Fill the canvas with the background color
+        const imageUrl = canvas.toDataURL("image/png");
+
+        const fileName = prompt("Enter a file name to save the image:");
+
+        if (fileName) {
+          const fileData = {
+            image: imageUrl,
+            file_name: fileName,
+          };
+
+          fetch("save/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify(fileData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert(data.message);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Failed to save image.");
+            });
+        }
+      });
+
+      function getCSRFToken() {
+        const csrfToken = document.querySelector(
+          "[name=csrfmiddlewaretoken]"
+        ).value;
+        return csrfToken;
+      }
+
+      canvas.addEventListener("mousedown", startPosition);
+      canvas.addEventListener("mouseup", endPosition);
+      canvas.addEventListener("mousemove", draw);
+
+      canvas.addEventListener("touchstart", (e) => startPosition(e));
+      canvas.addEventListener("touchend", endPosition);
+      canvas.addEventListener("touchmove", draw);
+    </script>
+  </body>
+</html>

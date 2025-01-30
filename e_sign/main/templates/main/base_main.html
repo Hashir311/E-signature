@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Sign</title>
+    <style>
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 10px;
+        width: 200px;
+        height: 200px;
+      }
+      .grid-item {
+        background-color: #4caf50;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <h1>E-Signature Tool</h1>
+      <button><a href="{% url 'accounts:logout' %}">Logout</a></button>
+    </nav>
+    {% block content %}{% endblock %}
+  </body>
+</html>
