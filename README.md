@@ -1,4 +1,4 @@
-/*************  ✨ Codeium Command ⭐  *************/
+
 # E-Signature Tool
 
 This project is a simple e-signature tool developed using Django. The tool allows users to create an account, login, and create a digital signature. The digital signature is stored in the database and can be retrieved later for verification.
@@ -29,4 +29,3 @@ Contributions are welcome. Please open an issue or a pull request if you have an
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
-/******  6e4db5d2-418e-4c32-922b-b77d1454dcb4  *******/
